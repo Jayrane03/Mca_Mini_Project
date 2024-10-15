@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { fetchAirPollutionData } from '../services/pollutionService';
 import '../Styles/map.css'; // Import your custom CSS for styling
+import BasicTable from "../components/table";
 
 // Import custom marker icons
 import goodIcon from '/Images/marker.png';
@@ -15,7 +16,6 @@ import unhealthyIcon from '/Images/marker.png';
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: goodIcon,
   iconUrl: goodIcon,
-
 });
 
 // Define a function to get the right marker icon based on AQI
@@ -41,7 +41,7 @@ const MapComponent = () => {
           lat: data.location.coordinates[1], // Latitude
           lon: data.location.coordinates[0], // Longitude
           aqi: data.current.pollution.aqius, // Adjust according to the data structure
-          pollutant: data.current.pollution.mainpollutant // Adjust according to the data structure
+          pollutant: data.current.pollution.mainus // Adjust according to the data structure
         });
       } else {
         console.error('Failed to fetch air quality data for Mumbai');
@@ -57,21 +57,26 @@ const MapComponent = () => {
       {loading ? (
         <div className="loading-message">Loading air quality data...</div>
       ) : (
-        <MapContainer center={defaultPosition} zoom={12} style={{ height: '500px', width: '100%' }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-          />
-          {station && (
-            <Marker position={[station.lat, station.lon]} icon={getMarkerIcon(station.aqi)}>
-              <Popup className="popup">
-                <strong>{station.city}</strong><br />
-                Air Quality Index: {station.aqi}<br />
-                Main Pollutant: {station.pollutant}
-              </Popup>
-            </Marker>
-          )}
-        </MapContainer>
+        <>
+          <MapContainer center={defaultPosition} zoom={12} style={{ height: '500px', width: '100%' }}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            />
+            {station && (
+              <Marker position={[station.lat, station.lon]} icon={getMarkerIcon(station.aqi)}>
+                <Popup className="popup">
+                  <strong>{station.city}</strong><br />
+                  Air Quality Index: {station.aqi}<br />
+                  Main Pollutant: {station.pollutant === 'p2' ? 'PM2.5' : station.pollutant}
+                </Popup>
+              </Marker>
+            )}
+          </MapContainer>
+
+          {/* Pass station data to BasicTable */}
+          <BasicTable stationData={station} />
+        </>
       )}
     </div>
   );
